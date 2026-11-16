@@ -1,6 +1,6 @@
 [project]
 name = "keepmeachangelog-action"
-version = "1.0.0"
+version = "1.0.1"
 description = "GitHub Action that reads a changelog entry and validates it with keepmeachangelog-lint"
 readme = "README.md"
 license = "MIT"

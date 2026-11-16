@@ -88,6 +88,7 @@ jobs:
           path: ${{ matrix.path }}
           version: ${{ matrix.version }}
           version_scheme: ${{ matrix.version_scheme }}
+          validation_level: none
       - name: Assert outputs
         env:
           V: ${{ steps.reader.outputs.version }}

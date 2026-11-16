@@ -34,6 +34,7 @@ def outputs(target: Path) -> dict[str, str]:
 
 
 def go(tmp_path, **inputs):
+    inputs.setdefault("validation_level", "none")
     env = {f"INPUT_{k.upper()}": v for k, v in inputs.items()}
     env["RUNNER_TEMP"] = str(tmp_path)
     return rc.run(env, tmp_path)
@@ -160,6 +161,10 @@ def test_invalid_inputs_fall_back(tmp_path, out, capsys):
     assert "Invalid version_scheme 'calver'" in text
     assert "Invalid validation_depth 'many'" in text
     assert "No target version specified" in text
+
+
+def test_validation_defaults_to_error():
+    assert rc.DEFAULT_VALIDATION_LEVEL == "error"
 
 
 def test_validation_none_skips(tmp_path, out, capsys):

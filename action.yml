@@ -14,7 +14,7 @@ inputs:
     description: 'Version of the log entry wanted, or "Unreleased" (default: the latest released version)'
     required: false
   validation_level:
-    description: 'Validate the CHANGELOG with keepmeachangelog-lint: none, warn (annotate, keep going) or error (annotate and fail). Default: none'
+    description: 'Validate the CHANGELOG with keepmeachangelog-lint: none, warn (annotate, keep going) or error (annotate and fail). Default: error'
     required: false
   validation_depth:
     description: 'How many of the newest released versions to validate (default: 10)'

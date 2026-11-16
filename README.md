@@ -2,6 +2,12 @@
 
 [![Tests](https://github.com/dcotecnologia/keepmeachangelog-action/actions/workflows/test.yml/badge.svg)](https://github.com/dcotecnologia/keepmeachangelog-action/actions/workflows/test.yml)
 [![Coverage](https://raw.githubusercontent.com/dcotecnologia/keepmeachangelog-action/badges/coverage.svg)](https://github.com/dcotecnologia/keepmeachangelog-action/actions/workflows/test.yml)
+[![Release](https://github.com/dcotecnologia/keepmeachangelog-action/actions/workflows/release.yml/badge.svg)](https://github.com/dcotecnologia/keepmeachangelog-action/actions/workflows/release.yml)
+[![Latest release](https://img.shields.io/github/v/release/dcotecnologia/keepmeachangelog-action)](https://github.com/dcotecnologia/keepmeachangelog-action/releases/latest)
+[![GitHub Marketplace](https://img.shields.io/badge/marketplace-Keep%20Me%20A%20Changelog-blue?logo=github)](https://github.com/marketplace/actions/keep-me-a-changelog)
+[![License](https://img.shields.io/github/license/dcotecnologia/keepmeachangelog-action)](LICENSE)
+[![Keep a Changelog](https://img.shields.io/badge/changelog-Keep%20a%20Changelog%201.1.0-E05735)](https://keepachangelog.com/en/1.1.0/)
+[![SemVer](https://img.shields.io/badge/semver-2.0.0-blue)](https://semver.org/spec/v2.0.0.html)
 
 GitHub Action that reads an entry from a `CHANGELOG.md` ([Keep a Changelog](https://keepachangelog.com/en/1.1.0/))
 and validates it with [`keepmeachangelog-lint`](https://github.com/dcotecnologia/keepmeachangelog-lint).
@@ -27,7 +33,7 @@ same inputs, same outputs, same config files. The built-in validation rules are 
 | `config_file` | — | Config file. Otherwise `.changelog-reader.json/.yml/.yaml`, `.changelogrc`, `.changelogrc.json` in the repo root |
 | `path` | `./CHANGELOG.md` | Changelog file |
 | `version` | latest released | Version wanted, or `Unreleased` |
-| `validation_level` | `none` | `none`, `warn` (annotations only) or `error` (annotations and fail) |
+| `validation_level` | `error` | `none`, `warn` (annotations only) or `error` (annotations and fail) |
 | `validation_depth` | `10` | Newest released versions to validate |
 | `version_scheme` | `semver` | `semver` or `pep440` (the linter validates semver only; with `pep440` validation is skipped with a warning) |
 | `lint_config` | — | keepmeachangelog TOML config, passed to the linter (`title`, `sections`, `require-links`, …) |

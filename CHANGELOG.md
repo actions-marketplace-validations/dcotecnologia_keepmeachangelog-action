@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-11-16
+
+### Fixed
+
+- Fix the changelog not being validated by default: `validation_level` now defaults to `error` instead of `none`
+
 ## [1.0.0] - 2026-11-16
 
 ### Added
@@ -14,5 +20,6 @@ All notable changes to this project will be documented in this file. The format 
 - Add coverage gate (100%) and coverage badge
 - Add `lint_config`, `lint_version` and `python_version` inputs
 
-[Unreleased]: https://github.com/dcotecnologia/keepmeachangelog-action/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/dcotecnologia/keepmeachangelog-action/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/dcotecnologia/keepmeachangelog-action/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/dcotecnologia/keepmeachangelog-action/releases/tag/v1.0.0

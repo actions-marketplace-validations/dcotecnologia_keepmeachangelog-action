@@ -29,6 +29,7 @@ CONFIG_FILE_NAMES = (
     ".changelogrc.json",
 )
 VALIDATION_LEVELS = ("none", "warn", "error")
+DEFAULT_VALIDATION_LEVEL = "error"
 VERSION_SCHEMES = ("semver", "pep440")
 DEFAULT_PATH = "./CHANGELOG.md"
 DEFAULT_VALIDATION_DEPTH = 10
@@ -316,9 +317,10 @@ def run(env: dict[str, str], cwd: Path) -> int:
     version = env.get("INPUT_VERSION") or config.get("version") or None
     level = _choice(
         "validation_level",
-        env.get("INPUT_VALIDATION_LEVEL") or config.get("validation_level") or "none",
+        env.get("INPUT_VALIDATION_LEVEL") or config.get("validation_level")
+        or DEFAULT_VALIDATION_LEVEL,
         VALIDATION_LEVELS,
-        "none",
+        DEFAULT_VALIDATION_LEVEL,
     )
     scheme = _choice(
         "version_scheme",
