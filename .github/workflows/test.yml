@@ -1,0 +1,106 @@
+name: Tests
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.3
+      - name: Run unit tests (100% coverage required)
+        run: uv run --group test pytest
+      - name: Coverage summary
+        if: ${{ always() }}
+        run: uv run --group test coverage report --rcfile=pyproject.toml --format=markdown >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-xml
+          path: coverage.xml
+  coverage-badge:
+    name: Coverage badge
+    needs: unit
+    if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          name: coverage-xml
+      - name: Generate badge
+        run: python3 scripts/coverage_badge.py coverage.xml "${RUNNER_TEMP}/coverage.svg"
+      - name: Publish badge to the badges branch
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin badges > /dev/null; then
+            git fetch origin badges
+            git checkout -f -B badges origin/badges
+          else
+            git checkout --orphan badges
+            git rm -rf . -q
+          fi
+          cp "${RUNNER_TEMP}/coverage.svg" coverage.svg
+          git add coverage.svg
+          if git diff --cached --quiet; then
+            echo "Badge unchanged"
+          else
+            git commit -m "chore: update coverage badge"
+            git push origin badges
+          fi
+  e2e:
+    name: e2e - ${{ matrix.scenario }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - scenario: latest released (own changelog)
+            path: ./.github/fixtures/changelog-yanked.md
+            expected_version: '2.0.0'
+            expected_status: yanked
+          - scenario: unreleased
+            path: ./.github/fixtures/changelog-unreleased.md
+            version: Unreleased
+            expected_version: Unreleased
+            expected_status: unreleased
+          - scenario: prereleased
+            path: ./.github/fixtures/changelog-prereleased.md
+            expected_version: 2.0.0-alpha.1
+            expected_status: prereleased
+          - scenario: pep440
+            path: ./.github/fixtures/changelog-pep440.md
+            version_scheme: pep440
+            expected_version: 0.1.0a1
+            expected_status: prereleased
+    steps:
+      - uses: actions/checkout@v7
+      - id: reader
+        uses: ./
+        with:
+          path: ${{ matrix.path }}
+          version: ${{ matrix.version }}
+          version_scheme: ${{ matrix.version_scheme }}
+      - name: Assert outputs
+        env:
+          V: ${{ steps.reader.outputs.version }}
+          S: ${{ steps.reader.outputs.status }}
+          F: ${{ steps.reader.outputs.changes_file }}
+        run: |
+          [ "$V" = "${{ matrix.expected_version }}" ] || { echo "::error::version $V"; exit 1; }
+          [ "$S" = "${{ matrix.expected_status }}" ] || { echo "::error::status $S"; exit 1; }
+          [ -s "$F" ] || { echo "::error::empty changes_file"; exit 1; }
+  lint-own-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./
+        with:
+          validation_level: error
