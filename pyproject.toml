@@ -1,0 +1,44 @@
+[project]
+name = "keepmeachangelog-action"
+version = "1.0.0"
+description = "GitHub Action that reads a changelog entry and validates it with keepmeachangelog-lint"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+dependencies = []
+
+# Not a package: tooling configuration only (tests, coverage, types).
+[tool.uv]
+package = false
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.414",
+]
+test = [
+    "keepmeachangelog",
+    "pytest>=9.2.0",
+    "pytest-cov>=7.1.0",
+    "pyyaml>=6.0.3",
+]
+
+[tool.pytest.ini_options]
+minversion = "9.0"
+testpaths = ["tests"]
+pythonpath = ["scripts"]
+addopts = "--import-mode=importlib --tb=short --cov=scripts --cov-branch --cov-report=term-missing --cov-report=xml --cov-fail-under=100"
+
+[tool.coverage.run]
+branch = true
+source = ["scripts"]
+omit = ["tests/*", "scripts/coverage_badge.py"]
+
+[tool.coverage.report]
+show_missing = true
+precision = 2
+
+[tool.pyright]
+pythonVersion = "3.11"
+include = ["scripts", "tests"]
+extraPaths = ["scripts"]
+typeCheckingMode = "standard"
