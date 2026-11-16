@@ -1,0 +1,80 @@
+name: 'Keep Me A Changelog'
+description: 'Read and parse the CHANGELOG file of the project, validated with keepmeachangelog-lint'
+branding:
+  icon: 'align-right'
+  color: 'gray-dark'
+inputs:
+  config_file:
+    description: 'Path to a configuration file. If not specified, will look for .changelog-reader.json, .changelog-reader.yml, .changelog-reader.yaml, .changelogrc, or .changelogrc.json in the repository root'
+    required: false
+  path:
+    description: 'Path to the CHANGELOG file containing the log entries (default: ./CHANGELOG.md)'
+    required: false
+  version:
+    description: 'Version of the log entry wanted, or "Unreleased" (default: the latest released version)'
+    required: false
+  validation_level:
+    description: 'Validate the CHANGELOG with keepmeachangelog-lint: none, warn (annotate, keep going) or error (annotate and fail). Default: none'
+    required: false
+  validation_depth:
+    description: 'How many of the newest released versions to validate (default: 10)'
+    required: false
+  version_scheme:
+    description: 'Versioning scheme of the version identifiers: semver or pep440. Validation only supports semver. Default: semver'
+    required: false
+  lint_config:
+    description: 'Path to a keepmeachangelog TOML config file, passed as --config to the linter'
+    required: false
+  lint_version:
+    description: 'Version of the keepmeachangelog package to install from PyPI (default: latest)'
+    required: false
+  python_version:
+    description: 'Python version used to run the linter (>= 3.11)'
+    required: false
+    default: '3.12'
+outputs:
+  version:
+    description: 'Version of the log entry found'
+    value: ${{ steps.read.outputs.version }}
+  date:
+    description: 'Release date of the log entry found'
+    value: ${{ steps.read.outputs.date }}
+  status:
+    description: 'Status of the log entry found. Possibly one of the following: prereleased, released, unreleased, or yanked'
+    value: ${{ steps.read.outputs.status }}
+  changes:
+    description: 'Description text of the log entry found'
+    value: ${{ steps.read.outputs.changes }}
+  changes_file:
+    description: 'Path to a temporary file containing the description text of the log entry found (e.g. for gh release create --notes-file)'
+    value: ${{ steps.read.outputs.changes_file }}
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@v7
+      with:
+        python-version: ${{ inputs.python_version }}
+
+    - name: Install keepmeachangelog
+      shell: bash
+      env:
+        LINT_VERSION: ${{ inputs.lint_version }}
+      run: |
+        set -euo pipefail
+        python -m venv "$RUNNER_TEMP/keepmeachangelog-venv"
+        spec="keepmeachangelog${LINT_VERSION:+==$LINT_VERSION}"
+        "$RUNNER_TEMP/keepmeachangelog-venv/bin/pip" install --quiet "$spec" pyyaml
+
+    - name: Read changelog
+      id: read
+      shell: bash
+      env:
+        INPUT_CONFIG_FILE: ${{ inputs.config_file }}
+        INPUT_PATH: ${{ inputs.path }}
+        INPUT_VERSION: ${{ inputs.version }}
+        INPUT_VALIDATION_LEVEL: ${{ inputs.validation_level }}
+        INPUT_VALIDATION_DEPTH: ${{ inputs.validation_depth }}
+        INPUT_VERSION_SCHEME: ${{ inputs.version_scheme }}
+        INPUT_LINT_CONFIG: ${{ inputs.lint_config }}
+      run: '"$RUNNER_TEMP/keepmeachangelog-venv/bin/python" "$GITHUB_ACTION_PATH/scripts/read_changelog.py"'
