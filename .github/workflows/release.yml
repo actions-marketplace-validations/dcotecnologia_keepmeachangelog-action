@@ -1,0 +1,66 @@
+name: Release
+on:
+  push:
+    tags:
+      - "v*.*.*"
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+permissions:
+  contents: write
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Read project version
+        id: vars
+        run: |
+          set -euo pipefail
+          version="$(python3 -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
+          if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match pyproject.toml version v${version}" >&2
+            exit 1
+          fi
+          echo "project_version=${version}" >> "$GITHUB_OUTPUT"
+          echo "major_tag=v${version%%.*}" >> "$GITHUB_OUTPUT"
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v10.3.3
+
+      - name: Run tests
+        run: uv run --group test pytest
+
+      - name: Read and validate the changelog entry (this action)
+        id: changelog_reader
+        uses: ./
+        with:
+          validation_level: error
+          validation_depth: 10
+          version: ${{ steps.vars.outputs.project_version }}
+          path: ./CHANGELOG.md
+
+      - name: Create the GitHub release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: v${{ steps.vars.outputs.project_version }}
+          name: v${{ steps.vars.outputs.project_version }}
+          body: ${{ steps.changelog_reader.outputs.changes }}
+          prerelease: ${{ steps.changelog_reader.outputs.status == 'prereleased' }}
+          draft: ${{ steps.changelog_reader.outputs.status == 'unreleased' }}
+          allowUpdates: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Move the major tag (e.g. v1) to this release
+        if: ${{ steps.changelog_reader.outputs.status == 'released' }}
+        env:
+          MAJOR_TAG: ${{ steps.vars.outputs.major_tag }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -f "${MAJOR_TAG}" "${GITHUB_SHA}"
+          git push -f origin "refs/tags/${MAJOR_TAG}"
