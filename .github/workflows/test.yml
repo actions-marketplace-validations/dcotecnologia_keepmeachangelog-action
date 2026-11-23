@@ -9,7 +9,7 @@ jobs:
   unit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
       - uses: astral-sh/setup-uv@v10.4.0
       - name: Run unit tests (100% coverage required)
         run: uv run --group test pytest
@@ -29,7 +29,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
       - uses: actions/download-artifact@v8
         with:
           name: coverage-xml
@@ -81,7 +81,7 @@ jobs:
             expected_version: 0.1.0a1
             expected_status: prereleased
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
       - id: reader
         uses: ./
         with:
@@ -101,7 +101,7 @@ jobs:
   lint-own-changelog:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
       - uses: ./
         with:
           validation_level: error
